@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #search-input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 60%;
+            margin-right: 10px;
+        }
+        #search-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #search-button:hover {
+            background-color: #0056b3;
+        }
+        #movie-list {
+            list-style: none;
+            padding: 0;
+        }
+        .movie-item {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .movie-item:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Movie Details</h1>
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="Enter movie title">
+            <button id="search-button">Search</button>
+        </div>
+        <ul id="movie-list"></ul>
+        <div id="movie-details"></div>
+    </div>
+
+    <script>
+    function fetchMovieDetails(movieId) {
+        const apiKey = 'c04a00b0';
+        const apiUrl = `http://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                displayMovieDetails(data);
+            })
+            .catch(error => console.log('Error fetching movie details:', error));
+    }
+
+    function displayMovieDetails(movie) {
+        const movieDetails = `
+            <h2>${movie.Title}</h2>
+            <p><strong>Year:</strong> ${movie.Year}</p>
+            <p><strong>Genre:</strong> ${movie.Genre}</p>
+            <p><strong>Director:</strong> ${movie.Director}</p>
+            <p><strong>Plot:</strong> ${movie.Plot}</p>
+            <img src="${movie.Poster}" alt="${movie.Title} Poster">
+        `;
+        document.getElementById('movie-details').innerHTML = movieDetails;
+    }
+
+    function displayMovieList(movies) {
+        const movieList = document.getElementById('movie-list');
+        movieList.innerHTML = '';
+        movies.forEach(movie => {
+            const listItem = document.createElement('li');
+            listItem.classList.add('movie-item');
+            listItem.textContent = `${movie.Title} (${movie.Year})`;
+            listItem.addEventListener('click', () => {
+                fetchMovieDetails(movie.imdbID);
+            });
+            movieList.appendChild(listItem);
+        });
+    }
+
+    function handleSearch() {
+        const searchInput = document.getElementById('search-input').value.trim();
+        if (searchInput === '') {
+            alert('Please enter a movie title.');
+            return;
+        }
+        const apiKey = 'c04a00b0';
+        const apiUrl = `http://www.omdbapi.com/?s=${encodeURIComponent(searchInput)}&apikey=${apiKey}`;
+        
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.Search) {
+                    displayMovieList(data.Search);
+                } else {
+                    alert('No movies found.');
+                }
+            })
+            .catch(error => console.log('Error fetching movie list:', error));
+    }
+
+    document.getElementById('search-button').addEventListener('click', handleSearch);
+
+    document.getElementById('search-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    });
+</script>
+</body>
+</html>
